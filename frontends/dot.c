@@ -24,6 +24,7 @@
 #include "../netns.h"
 #include "../utils.h"
 #include "../version.h"
+#include "../vm.h"
 
 static void output_label(FILE *f, struct list *labels)
 {
@@ -92,6 +93,19 @@ static void output_ifaces_pass1(FILE *f, struct list *list, unsigned int prop_ma
 	}
 }
 
+static void output_virtual_machines(FILE *f, struct list *vm_list, unsigned int prop_mask)
+{
+	struct vm *vm;
+
+	list_for_each(vm, *vm_list) {
+		fprintf(f, "\"%s\" [label=\"%s (%s)",
+			vmid(vm), vm->name ? vm->name : "",
+			vm->driver ? vm->driver : "");
+		output_label_properties(f, &vm->properties, prop_mask);
+		fprintf(f, "\",shape=hexagon,style=filled,fillcolor=black,fontcolor=white]\n");
+	}
+}
+
 static void output_ifaces_pass2(FILE *f, struct list *list)
 {
 	struct if_entry *ptr;
@@ -120,6 +134,9 @@ static void output_ifaces_pass2(FILE *f, struct list *list)
 		if (ptr->peer && (size_t) ptr > (size_t) ptr->peer) {
 			fprintf(f, "\"%s\" -> ", ifid(ptr));
 			fprintf(f, "\"%s\" [dir=none]\n", ifid(ptr->peer));
+		}
+		if (ptr->vm) {
+			fprintf(f, "\"%s\" -> \"%s\" [dir=none]\n", vmid(ptr->vm), ifid(ptr));
 		}
 	}
 }
@@ -157,6 +174,7 @@ static void dot_output(FILE *f, struct list *netns_list, struct output_entry *ou
 			fprintf(f, "label=\"%s\"\n", ns->name);
 			fprintf(f, "fontcolor=\"black\"\n");
 		}
+		output_virtual_machines(f, &ns->vms, output_entry->print_mask);
 		output_ifaces_pass1(f, &ns->ifaces, output_entry->print_mask);
 		if (ns->name)
 			fprintf(f, "}\n");
