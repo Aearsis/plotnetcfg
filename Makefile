@@ -6,10 +6,12 @@ INCLUDE=-I$(jansson)/src
 endif
 
 CFLAGS=-std=c99 -D_GNU_SOURCE -W -Wall $(INCLUDE) $(EXTRA_CFLAGS)
+LDFLAGS+=-lexpat -lvirt
 
 OBJECTS=addr args ethtool frontend handler if label main master \
         match netlink netns route sysfs tunnel utils
-HANDLERS=bond bridge iov openvswitch team veth vlan vxlan route
+HANDLERS=bond bridge iov libvirt openvswitch team veth vlan vxlan route
+
 FRONTENDS=dot json
 
 OBJ=$(OBJECTS:%=%.o) $(HANDLERS:%=handlers/%.o) $(FRONTENDS:%=frontends/%.o)

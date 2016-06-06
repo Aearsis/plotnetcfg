@@ -32,6 +32,7 @@
 #include "handlers/bond.h"
 #include "handlers/bridge.h"
 #include "handlers/iov.h"
+#include "handlers/libvirt.h"
 #include "handlers/openvswitch.h"
 #include "handlers/team.h"
 #include "handlers/veth.h"
@@ -51,6 +52,7 @@ static void register_handlers(void)
 	handler_bond_register();
 	handler_bridge_register();
 	handler_iov_register();
+	handler_libvirt_register();
 	handler_openvswitch_register();
 	handler_team_register();
 	handler_veth_register();
