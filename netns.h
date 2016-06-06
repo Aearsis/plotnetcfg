@@ -23,6 +23,7 @@
 struct label;
 struct netns_entry;
 struct route;
+struct vm;
 
 struct netns_id {
 	struct node n;
@@ -34,6 +35,7 @@ struct netns_entry {
 	struct node n;
 	struct list ifaces;
 	struct list warnings;
+	struct list vms;
 	long kernel_id;
 	/* name is NULL for root name space, for other name spaces it
 	 * contains human recognizable identifier */

@@ -1,6 +1,6 @@
 /*
  * This file is a part of plotnetcfg, a tool to visualize network config.
- * Copyright (C) 2014 Red Hat, Inc. -- Jiri Benc <jbenc@redhat.com>
+ * Copyright (C) 2016 Red Hat, Inc. -- Ondrej Hlavaty <ohlavaty@redhat.com>
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -13,26 +13,38 @@
  * GNU General Public License for more details.
  */
 
-#ifndef _UTILS_H
-#define _UTILS_H
+#ifndef _VM_H
+#define _VM_H
 
-struct if_entry;
+#include "addr.h"
+#include "label.h"
+
+#include <stdlib.h>
+
 struct netns_entry;
-struct rtable;
-struct vm;
 
-#define _unused __attribute__((unused))
+struct vm {
+	struct node n;
 
-#define OFFSETOF(s, i) ((size_t) &((s *)0)->i)
-#define SKIP_BACK(s, i, p) ((s *)((char *)p - OFFSETOF(s, i)))
-#define ARRAY_SIZE(a)	(sizeof(a) / sizeof(*a))
+	struct netns_entry *ns;		/* Home netns where to render this vm */
+	char *name;
+	char *driver;
+	struct list properties;
+	struct list rev_vm;		/* Reverse mapping to interfaces */
+};
 
+inline static struct vm *vm_new()
+{
+	return calloc(1, sizeof(struct vm));
+}
 
-/* Returns static buffer. */
-char *ifstr(struct if_entry *entry);
-char *ifid(struct if_entry *entry);
-char *nsid(struct netns_entry *entry);
-char *rtid(struct rtable *rt);
-char *vmid(struct vm *vm);
+inline static void vm_free(struct vm *vm)
+{
+	if (vm->name)
+		free(vm->name);
+	if (vm->driver)
+		free(vm->driver);
+	free(vm);
+}
 
 #endif

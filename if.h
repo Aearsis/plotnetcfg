@@ -21,6 +21,7 @@
 #include "list.h"
 
 struct netns_entry;
+struct vm;
 
 struct if_addr {
 	struct node n;
@@ -32,6 +33,7 @@ struct if_entry {
 	struct node n;			/* in netns->ifaces        */
 	struct node rev_master_node;	/* in if_entry->rev_master */
 	struct node rev_link_node;	/* in if_entry->rev_link   */
+	struct node rev_vm_node;	/* in vm->rev_vm */
 
 	struct netns_entry *ns;
 	char *internal_ns;
@@ -61,6 +63,7 @@ struct if_entry {
 	char *pci_path;
 	char *pci_physfn_path;
 	struct if_entry *physfn;
+	struct vm *vm;
 };
 
 #define IF_LOOPBACK		1

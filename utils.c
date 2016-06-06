@@ -21,6 +21,7 @@
 #include "if.h"
 #include "netns.h"
 #include "route.h"
+#include "vm.h"
 
 char *ifstr(struct if_entry *entry)
 {
@@ -65,5 +66,30 @@ char *rtid(struct rtable *rt)
 	static char buf [32];
 
 	snprintf(buf, sizeof(buf), "%u", rt->id);
+	return buf;
+}
+
+char *vmid(struct vm *vm)
+{
+	static char *buf = NULL;
+	static int buflen = 4096;
+
+	if (!vm)
+		return "";
+
+	if (!vm->driver && !vm->name)
+		return "?";
+
+	if (!buf)
+		buf = malloc(buflen);
+
+	while (snprintf(buf, buflen, "%s/%s", vm->driver, vm->name) >= buflen) {
+		free(buf);
+		buflen *= 2;
+		buf = malloc(buflen);
+		if (!buf)
+			return NULL;
+	}
+
 	return buf;
 }

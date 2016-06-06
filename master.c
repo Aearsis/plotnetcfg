@@ -23,6 +23,7 @@
 #include "master.h"
 #include "match.h"
 #include "netns.h"
+#include "vm.h"
 
 int master_set(struct if_entry *master, struct if_entry *master_of)
 {
@@ -42,6 +43,17 @@ int link_set(struct if_entry *link, struct if_entry *entry)
 	entry->link = link;
 	if (entry->link != NULL)
 		list_append(&entry->link->rev_link, &entry->rev_link_node);
+
+	return 0;
+}
+
+int vm_set(struct vm *vm, struct if_entry *entry)
+{
+	if (entry->vm != NULL)
+		node_remove(&entry->rev_vm_node);
+	entry->vm = vm;
+	if (entry->vm != NULL)
+		list_append(&entry->vm->rev_vm, &entry->rev_vm_node);
 
 	return 0;
 }
