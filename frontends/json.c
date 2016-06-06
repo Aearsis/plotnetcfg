@@ -27,6 +27,7 @@
 #include "../route.h"
 #include "../utils.h"
 #include "../version.h"
+#include "../vm.h"
 
 static json_t *label_to_array(struct list *labels)
 {
@@ -112,6 +113,8 @@ static json_t *interfaces_to_array(struct list *list, struct output_entry *outpu
 		json_object_set_new(ifobj, "name", json_string(entry->if_name));
 		json_object_set_new(ifobj, "driver", json_string(entry->driver ? entry->driver : ""));
 		json_object_set_new(ifobj, "info", label_properties_to_object(&entry->properties, output_entry->print_mask));
+		if (entry->vm)
+			json_object_set_new(ifobj, "virtual-machine", json_string(vmid(entry->vm)));
 		if (label_prop_match_mask(IF_PROP_CONFIG, output_entry->print_mask)) {
 			json_object_set_new(ifobj, "addresses", addresses_to_array(&entry->addr));
 			json_object_set_new(ifobj, "mtu", json_integer(entry->mtu));
@@ -167,6 +170,35 @@ static json_t *interfaces_to_array(struct list *list, struct output_entry *outpu
 		json_object_set_new(ifarr, ifid(entry), ifobj);
 	}
 	return ifarr;
+}
+
+static json_t *vms_to_array(struct list *vm_list, struct output_entry *output_entry)
+{
+	json_t *vmarr, *vmobj, *ifarr, *jconn;
+	struct if_entry *if_entry;
+	struct vm *vm;
+
+	vmarr = json_object();
+	list_for_each (vm, *vm_list) {
+		vmobj = json_object();
+		json_object_set_new(vmobj, "id", json_string(vmid(vm)));
+		json_object_set_new(vmobj, "name", json_string(vm->name ? vm->name : ""));
+		json_object_set_new(vmobj, "driver", json_string(vm->driver ? vm->driver : ""));
+		json_object_set_new(vmobj, "info", label_properties_to_object(&vm->properties, output_entry->print_mask));
+
+		ifarr = json_object();
+		list_for_each (if_entry, vm->rev_vm) {
+			jconn = connection(if_entry, NULL);
+			json_object_set_new(ifarr, ifid(if_entry), jconn);
+			fprintf(stderr, "iface\n");
+		}
+		if (json_object_size(ifarr))
+			json_object_set(vmobj, "interfaces", ifarr);
+		json_decref(ifarr);
+
+		json_object_set_new(vmarr, vmid(vm), vmobj);
+	}
+	return vmarr;
 }
 
 static json_t *routes_to_array(struct list *routes)
@@ -247,6 +279,7 @@ static void json_output(FILE *f, struct list *netns_list, struct output_entry *o
 		json_object_set_new(ns, "id", json_string(nsid(entry)));
 		json_object_set_new(ns, "name", json_string(entry->name ? entry->name : ""));
 		json_object_set_new(ns, "interfaces", interfaces_to_array(&entry->ifaces, output_entry));
+		json_object_set_new(ns, "virtual-machines", vms_to_array(&entry->vms, output_entry));
 		json_object_set_new(ns, "routes", rtables_to_array(&entry->rtables));
 		if (!list_empty(entry->warnings))
 			json_object_set_new(ns, "warnings", label_to_array(&entry->warnings));

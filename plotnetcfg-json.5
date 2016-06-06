@@ -55,6 +55,11 @@ interfaces
 Associative array of interface objects. Key is the interface id.
 
 .TP
+virtual-machines
+.I (object)
+Associative array of virtual machine objects. Key is the VM id.
+
+.TP
 warnings
 .I (array)
 If present, an array of strings. Contains error messages encountered when
@@ -165,6 +170,34 @@ are no children.
 peer
 .I (object)
 The peer interface, as a connection object. Not present if there's no peer.
+
+.TP
+virtual-machine
+.I (string)
+The (optional) ID of VM this interface belongs to.
+
+.SS Virtual Machine object fields
+
+.TP
+id
+.I (string)
+Opaque identifier unique among other virtual machines.
+
+.TP
+name
+.I (string)
+User-readable name of the virtual machine.
+
+.TP
+driver
+.I (string)
+The name of the handler we know this VM from.
+
+.TP
+interfaces
+.I (object)
+Associative array of interfaces connected to this VM, as connection objects.
+
 
 .SS Connection object fields
 
