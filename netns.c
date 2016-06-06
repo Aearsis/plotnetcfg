@@ -83,6 +83,7 @@ static struct netns_entry *netns_create()
 
 	list_init(&ns->ifaces);
 	list_init(&ns->warnings);
+	list_init(&ns->vms);
 	return ns;
 }
 

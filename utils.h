@@ -19,6 +19,7 @@
 struct if_entry;
 struct netns_entry;
 struct rtable;
+struct vm;
 
 #define _unused __attribute__((unused))
 
@@ -32,5 +33,6 @@ char *ifstr(struct if_entry *entry);
 char *ifid(struct if_entry *entry);
 char *nsid(struct netns_entry *entry);
 char *rtid(struct rtable *rt);
+char *vmid(struct vm *vm);
 
 #endif
