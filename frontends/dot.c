@@ -23,7 +23,6 @@
 #include "../if.h"
 #include "../netns.h"
 #include "../utils.h"
-#include "../version.h"
 
 static void output_label(FILE *f, struct list *labels)
 {

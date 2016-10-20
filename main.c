@@ -22,7 +22,6 @@
 #include "args.h"
 #include "netns.h"
 #include "utils.h"
-#include "version.h"
 
 #include "frontend.h"
 #include "frontends/dot.h"

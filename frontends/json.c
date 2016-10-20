@@ -26,7 +26,6 @@
 #include "../netns.h"
 #include "../route.h"
 #include "../utils.h"
-#include "../version.h"
 
 static json_t *label_to_array(struct list *labels)
 {

@@ -5,7 +5,7 @@ libs=$(wildcard $(jansson)/src/.libs/libjansson.a $(jansson)/lib/libjansson.a)
 INCLUDE=-I$(jansson)/src
 endif
 
-CFLAGS=-std=c99 -D_GNU_SOURCE -W -Wall $(INCLUDE) $(EXTRA_CFLAGS)
+CFLAGS=-std=c99 -D_GNU_SOURCE $(INCLUDE) -DVERSION='"$(shell git describe 2>/dev/null || cat version)"' -W -Wall $(EXTRA_CFLAGS)
 
 OBJECTS=addr args ethtool frontend handler if label main master \
         match netlink netns route sysfs tunnel utils
@@ -19,16 +19,13 @@ all: check-libs plotnetcfg
 plotnetcfg: $(OBJ)
 	$(CC) $(LDFLAGS) -o $@ $+ $(libs)
 
-Makefile.dep: version.h $(OBJ:.o=.c)
+Makefile.dep: $(OBJ:.o=.c)
 	$(CC) -M $(CFLAGS) $(OBJ:.o=.c) | sed 's,\($*\)\.o[ :]*,\1.o $@ : ,g' >$@
 
 -include Makefile.dep
 
-version.h:
-	echo "#define VERSION \"`git describe 2> /dev/null || cat version`\"" > version.h
-
 clean:
-	rm -f version.h Makefile.dep *.o frontends/*.o handlers/*.o plotnetcfg
+	rm -f Makefile.dep *.o frontends/*.o handlers/*.o plotnetcfg
 
 install: plotnetcfg
 	install -d $(DESTDIR)/usr/sbin/
