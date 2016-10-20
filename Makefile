@@ -1,11 +1,12 @@
 ifeq ($(jansson),)
-libs=$(shell pkg-config --libs jansson)
+LIBS=$(shell pkg-config --libs jansson)
 else
-libs=$(wildcard $(jansson)/src/.libs/libjansson.a $(jansson)/lib/libjansson.a)
+LIBS=$(wildcard $(jansson)/src/.libs/libjansson.a $(jansson)/lib/libjansson.a)
 INCLUDE=-I$(jansson)/src
 endif
 
-CFLAGS=-std=c99 -D_GNU_SOURCE $(INCLUDE) -DVERSION='"$(shell git describe 2>/dev/null || cat version)"' -W -Wall $(EXTRA_CFLAGS)
+VERSION=$(shell git describe 2>/dev/null || cat version)
+FLAGS=-D_GNU_SOURCE -DVERSION='"${VERSION}"' -std=c99 -W -Wall $(INCLUDE) $(CFLAGS)
 
 OBJECTS=addr args ethtool frontend handler if label main master \
         match netlink netns route sysfs tunnel utils
@@ -14,30 +15,33 @@ FRONTENDS=dot json
 
 OBJ=$(OBJECTS:%=%.o) $(HANDLERS:%=handlers/%.o) $(FRONTENDS:%=frontends/%.o)
 
-all: check-libs plotnetcfg
-
-plotnetcfg: $(OBJ)
-	$(CC) $(LDFLAGS) -o $@ $+ $(libs)
+all: plotnetcfg
 
 Makefile.dep: $(OBJ:.o=.c)
-	$(CC) -M $(CFLAGS) $(OBJ:.o=.c) | sed 's,\($*\)\.o[ :]*,\1.o $@ : ,g' >$@
+	$(CC) -M $(FLAGS) $(OBJ:.o=.c) | sed 's,\($*\)\.o[ :]*,\1.o $@: ,g' >$@
 
 -include Makefile.dep
 
+plotnetcfg: check-libs $(OBJ)
+	$(CC) $(LDFLAGS) -o $@ $(filter %.o,$^) $(LIBS)
+
+%.o: %.c
+	$(CC) -c $(FLAGS) -o $@ $<
+
 clean:
-	rm -f Makefile.dep *.o frontends/*.o handlers/*.o plotnetcfg
+	rm -f Makefile.dep plotnetcfg *.o handlers/*.o frontends/*.o
 
 install: plotnetcfg
 	install -d $(DESTDIR)/usr/sbin/
 	install plotnetcfg $(DESTDIR)/usr/sbin/
 	install -d $(DESTDIR)/usr/share/man/man8/
+	install -m 644 -t $(DESTDIR)/usr/share/man/man8/ plotnetcfg.8
 	install -d $(DESTDIR)/usr/share/man/man5/
-	install -m 644 plotnetcfg.8 $(DESTDIR)/usr/share/man/man8/
 	install -m 644 plotnetcfg-json.5 $(DESTDIR)/usr/share/man/man5/
 
 .PHONY: check-libs
 check-libs:
-	@if [ "$(libs)" = "" ]; then \
+	@if [ "$(LIBS)" = "" ]; then \
 	echo "ERROR: libjansson not found."; \
 	exit 1; \
 	fi
